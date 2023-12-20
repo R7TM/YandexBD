@@ -1,0 +1,297 @@
+<html>
+<head>
+  <!-- Подключаемые из локального каталога файлы с описаниями классов и пр. -->
+  <script type="text/javascript" src="car.js"></script>
+  <script type="text/javascript" src="route.js"></script>
+  <script type="text/javascript" src="script.js"></script>
+  <!-- Подключение jquery -->
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  
+  <script type="text/javascript">
+    $(document).ready(function() {
+    $('#input_troll').hide();
+	$('#input_route').hide();
+	$('#search_button').hide();
+    $("#car_table").hide();
+    $("#error_message").hide();
+    $("#route_list").hide();
+    //	 alert("were");
+
+
+    $.ajax({
+	
+        url: yandex_function_url,
+        method: 'GET',
+        data: {
+            "data": "route_list"
+        },
+        // Поле, указывающее, какую функцию выполнить на 
+        // успешное получение ответа
+        success: function(data){ 
+            $("#route_list").show();
+            $('#search_button').show();
+	    console.log("2323");
+            console.log(preconvert_json(data));
+            console.log(JSON.parse(preconvert_json(data)));
+            update_route_list(data)    ;
+        }
+    }).fail(function(data){
+console.log("1113");
+        output_error("Список маршрутов не получен");
+        $("#error_message").show();
+    })
+
+
+	
+
+
+
+});
+
+
+
+	</script>
+
+
+
+    <!-- Подключение стилей из внешнего файла -->
+	<link rel="stylesheet" href="styles.css">
+
+
+</head>
+
+<body>
+  <div>
+    <h1>Маршруты</h1>
+    <h2>которых нет*</h2>
+    <h3>*после 20▯00</h6>
+  </div>
+  <div id='error_message'>Not found</div> 
+
+  
+  <div>	
+  Выберите маршрут:
+  <select id='route_list'>
+    <option>--</option>
+  </select>
+
+  <table id='car_table' class ='table2'>
+    <tr>
+      <th>Номер троллейбуса</th>
+      <th>Модель</th>
+      <th>Номер маршрута</th>
+      <th>Конечные</th>
+    </tr>
+  </table>
+  <button id='del_route' type=button>Удалить выбранный маршрут</button>	  
+  </div>	
+
+  <div>
+	  
+  <button id='active_input_troll'>Добавить троллейбус</button>
+  <form id='input_troll'>
+	  <input type="hidden" id="data"  name="data" value="34657" />
+	Добавление троллейбуса: <br>
+	<table text_align='left'>
+	<tr> <td>Номер:</td>  <td><input id="number"></td> </tr>
+	<tr> <td>Модель:</td>  <td><input id="model"></td> </tr>
+	<tr> <td>Маршрут:</td>  <td><input id="route"></td> </tr>
+	</table>
+    <button id='save_input_troll' type=button>Сохранить</button>
+  </form>
+
+  <button id='active_input_route'>Добавить маршрут</button>
+  <form id='input_route'>
+	Добавление Маршрута: <br>
+	<table text_align='left'>
+	<tr> <td>Номер:</td>  <td><input id="route2"></td> </tr>
+	<tr> <td>Конечная 1:</td>  <td><input id="start"></td> </tr>
+	<tr> <td>Конечная 2:</td>  <td><input id="end"></td> </tr>
+		<tr> <td>Остановок:</td>  <td><input id="stops"></td> </tr>
+	</table>
+    <button id='save_input_route' type=button>Сохранить</button>
+  </form>
+	  
+  </div>	  
+
+    <!-- Скрипт, в котором можно будет настроить реакцию на какое-либо 
+	событие элемента страницы: нажатие кнопки, изменение текстового поля и пр. -->
+	<script type="text/javascript">
+
+		
+
+	function deletetroll(number, i){
+		//alert(i+"=="+number);
+
+		$.ajax(
+{
+        url: yandex_function_url,
+        method: 'GET',
+        data: {
+        "data": "delete_troll",
+         "number": number     
+        }}).done(changeOption());
+
+		
+	}
+
+  save_input_troll.onclick = function() {
+	  const input_model = document.getElementById("model");
+	  var model = input_model.value;
+
+	  const input_number = document.getElementById("number");
+	  var number = input_number.value;
+
+	  var title = 'insert_troll';
+
+	  const input_route = document.getElementById("route");
+	  var line = input_route.value;
+
+	$.ajax({
+        url: yandex_function_url + '?data=' + title + '&line=' + line + '&number=' + number + '&model=' + model,
+        crossDomain: true,
+        method: 'post',
+        dataType: "json"
+    }).done(changeOption());}
+		
+	  
+
+
+ save_input_route.onclick = function() {
+	  const input_start = document.getElementById("start");
+	  var start = input_start.value;
+
+	  const input_end = document.getElementById("end");
+	  var end = input_end.value;
+
+	  var title = 'insert_route';
+
+	  const input_route = document.getElementById("route2");
+	  var line = input_route.value;
+
+	 const input_stops = document.getElementById("stops");
+	  var stops = input_stops.value;
+
+
+
+	 $.ajax({
+        url: yandex_function_url + '?data=' + title + '&line=' + line + '&start=' + start + '&end=' + end + '&stops=' + stops,
+        crossDomain: true,
+        method: 'post',
+        dataType: "json"
+    }).done(reloadRoutes());
+	 }
+
+
+  active_input_troll.onclick = function() {
+    $('#active_input_troll').hide();
+	  $('#input_troll').show();
+  };
+			
+	active_input_route.onclick = function() {
+    $('#active_input_route').hide();
+	  $('#input_route').show();
+  };
+		
+
+const route_list = document.getElementById("route_list");
+ 
+function changeOption(){
+    const selectedOption = route_list.options[route_list.selectedIndex];
+    //alert();
+   var line = selectedOption.text
+
+	if (line=="--"){
+		$("#car_table").hide();
+	}else{
+
+$.ajax(
+{
+        url: yandex_function_url,
+        method: 'GET',
+        data: {
+               "data": "list_by_line",
+         "line": line
+         
+        },
+        // Поле, указывающее, какую функцию выполнить на 
+        // успешное получение ответа
+        success: function(data){ 
+            $("#car_table").show();
+            $('#search_button').show();
+            console.log(preconvert_json(data))
+            console.log(JSON.parse(preconvert_json(data)))
+            update_car_list(data)    
+        }
+    }).fail(function(data){
+        output_error("GET request failed");
+    })
+
+
+
+
+
+}}
+ 
+route_list.addEventListener("change", changeOption);
+
+		del_route.onclick = function() {
+
+const selectedOption = route_list.options[route_list.selectedIndex];
+    //alert();
+var line = selectedOption.text
+
+
+	if (line!="--"){
+		$.ajax(
+{
+        url: yandex_function_url,
+        method: 'GET',
+        data: {
+        "data": "delete_route",
+         "line": line     
+        }}).done(reloadRoutes());
+	}
+		}
+
+function reloadRoutes(){
+	$("#car_table").hide();
+    $("#error_message").hide();
+	while (route_list.options.length > 0) {                
+        route_list.remove(0);
+    } 
+    //	 alert("were");
+
+
+    $.ajax({
+	
+        url: yandex_function_url,
+        method: 'GET',
+        data: {
+            "data": "route_list"
+        },
+        // Поле, указывающее, какую функцию выполнить на 
+        // успешное получение ответа
+        success: function(data){ 
+            $("#route_list").show();
+            $('#search_button').show();
+	    console.log("2323");
+            console.log(preconvert_json(data));
+            console.log(JSON.parse(preconvert_json(data)));
+            update_route_list(data)    ;
+				let k = route_list.options.length;
+	route_list.size = k;
+	
+        }
+    }).fail(function(data){
+console.log("1113");
+        output_error("Список маршрутов не получен");
+        $("#error_message").show();
+    })
+
+}
+		
+	</script>
+
+</body>
+</html>
